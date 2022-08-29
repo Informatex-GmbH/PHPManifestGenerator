@@ -21,6 +21,7 @@ class ManifestFields implements \IteratorAggregate {
         'minimal-ui',
         'browser'
     ];
+    private string $id                        = '';
     private array  $icons                     = [];
     private string $lang                      = '';
     private string $name                      = '';
@@ -79,6 +80,7 @@ class ManifestFields implements \IteratorAggregate {
             'description',
             'dir',
             'display',
+            'id',
             'icons',
             'lang',
             'name',
@@ -239,6 +241,32 @@ class ManifestFields implements \IteratorAggregate {
      */
     public function getDisplay(): string {
         return $this->display;
+    }
+
+
+    /**
+     * The id property represents the identity of the PWA to the browser.
+     * When the browser sees a manifest that does not have an identity that matches an already installed PWA,
+     * it will treat it as a new PWA, even if it is served from the same URL as another PWA.
+     * But if it sees a manifest with an identity that matches the already installed PWA,
+     * it will treat that as the installed PWA.
+     *
+     * @param string $id
+     * @return static
+     */
+    public function setId(string $id): self {
+        $this->id = $id;
+        $this->setFields['id'] = null;
+
+        return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getId(): string {
+        return $this->id;
     }
 
 
