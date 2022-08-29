@@ -36,7 +36,7 @@ class ManifestGenerator {
 
     /**
      * @param iterable $fields
-     * @return array|ManifestFields|iterable
+     * @return array
      */
     public function getDefaultValues(iterable $fields = []): array {
         $this->fields = $this->fields->getDefaultValues($fields);
@@ -55,6 +55,7 @@ class ManifestGenerator {
             'dir' => $this->fields->getDir(),
             'display' => $this->fields->getDisplay(),
             'icons' => $this->fields->getIcons(),
+            'id' => $this->fields->getId(),
             'lang' => $this->fields->getLang(),
             'name' => $this->fields->getName(),
             'orientation' => $this->fields->getOrientation(),
