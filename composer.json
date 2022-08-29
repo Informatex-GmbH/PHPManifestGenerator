@@ -1,5 +1,5 @@
 {
-  "name": "Informatex-GmbH/PHPManifestGenerator",
+  "name": "informatex-gmb-h/php-manifest-generator",
   "description": "A simple PHP manifest.json Generator",
   "keywords": [
     "manifest", "json"
