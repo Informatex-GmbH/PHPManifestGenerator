@@ -25,7 +25,7 @@ class ManifestFields implements \IteratorAggregate {
     private array  $icons                     = [];
     private string $lang                      = '';
     private string $name                      = '';
-    private string $orientation               = '';
+    private string $orientation               = 'portrait';
     private array  $orientationValues         = [
         'any',
         'natural',
