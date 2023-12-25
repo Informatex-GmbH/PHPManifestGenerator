@@ -39,6 +39,7 @@ class ManifestFields implements \IteratorAggregate {
     private bool   $preferRelatedApplications = false;
     private array  $relatedApplications       = [];
     private string $scope                     = '';
+    private array $screenshots                = [];
     private string $shortName                 = '';
     private string $startUrl                  = '';
     private string $themeColor                = '';
@@ -91,6 +92,7 @@ class ManifestFields implements \IteratorAggregate {
             'shortName',
             'startUrl',
             'themeColor',
+            'screenshots',
         ];
         if (!in_array($field, $validFields, true)) {
             throw new \InvalidArgumentException(sprintf('Unknown field "%s"', $field));
@@ -427,6 +429,29 @@ class ManifestFields implements \IteratorAggregate {
      */
     public function getScope(): string {
         return $this->scope ?: '';
+    }
+
+
+    /**
+     * The screenshots member defines an array of screenshots intended to showcase the application.
+     * These images are intended to be used by progressive web app stores.
+     *
+     * @param array $screenshots
+     * @return static
+     */
+    public function setScreenshots(array $screenshots): self {
+        $this->screenshots = $screenshots;
+        $this->setFields['screenshots'] = null;
+
+        return $this;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getScreenshots(): array {
+        return $this->screenshots;
     }
 
 

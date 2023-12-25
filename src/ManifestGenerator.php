@@ -26,11 +26,12 @@ class ManifestGenerator {
      * @param iterable $fields ManifestFields object or fields array
      *
      * @return string
+     * @throws \JsonException
      */
     public function toJSON(iterable $fields = []): string {
         $this->fields = $this->fields->check($fields);
 
-        return json_encode($this->toArray());
+        return json_encode($this->toArray(), JSON_THROW_ON_ERROR);
     }
 
 
@@ -65,6 +66,7 @@ class ManifestGenerator {
             'short_name' => $this->fields->getShortName(),
             'start_url' => $this->fields->getStartUrl(),
             'theme_color' => $this->fields->getThemeColor(),
+            'screenshots' => $this->fields->getScreenshots(),
         ];
 
         foreach ($fields as $key => $value) {
