@@ -31,7 +31,7 @@ class ManifestGenerator {
     public function toJSON(iterable $fields = []): string {
         $this->fields = $this->fields->check($fields);
 
-        return json_encode($this->toArray(), JSON_THROW_ON_ERROR);
+        return json_encode($this->toArray(), JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
     }
 
 
@@ -50,24 +50,11 @@ class ManifestGenerator {
      * @return array
      */
     public function toArray(): array {
-        $fields = [
-            'background_color' => $this->fields->getBackgroundColor(),
-            'description' => $this->fields->getDescription(),
-            'dir' => $this->fields->getDir(),
-            'display' => $this->fields->getDisplay(),
-            'icons' => $this->fields->getIcons(),
-            'id' => $this->fields->getId(),
-            'lang' => $this->fields->getLang(),
-            'name' => $this->fields->getName(),
-            'orientation' => $this->fields->getOrientation(),
-            'prefer_related_applications' => $this->fields->getPreferRelatedApplications(),
-            'related_applications' => $this->fields->getRelatedApplications(),
-            'scope' => $this->fields->getScope(),
-            'short_name' => $this->fields->getShortName(),
-            'start_url' => $this->fields->getStartUrl(),
-            'theme_color' => $this->fields->getThemeColor(),
-            'screenshots' => $this->fields->getScreenshots(),
-        ];
+        $fields = [];
+        foreach ($this->fields->getValidFieldNames() as $fieldName) {
+            $name = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $fieldName));
+            $fields[$name] = $this->fields->{'get' . ucfirst($fieldName)}();
+        }
 
         foreach ($fields as $key => $value) {
             if (!$value) {

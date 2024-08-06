@@ -37,13 +37,33 @@ class ManifestFields implements \IteratorAggregate {
         'portrait-secondary'
     ];
     private bool   $preferRelatedApplications = false;
+    private array  $protocolHandlers          = [];
     private array  $relatedApplications       = [];
     private string $scope                     = '';
-    private array $screenshots                = [];
+    private array  $screenshots               = [];
     private string $shortName                 = '';
     private string $startUrl                  = '';
     private string $themeColor                = '';
     private array  $setFields                 = [];
+    private array  $validFieldNames           = [
+        'backgroundColor',
+        'description',
+        'dir',
+        'display',
+        'id',
+        'icons',
+        'lang',
+        'name',
+        'orientation',
+        'preferRelatedApplications',
+        'protocolHandlers',
+        'relatedApplications',
+        'scope',
+        'shortName',
+        'startUrl',
+        'themeColor',
+        'screenshots',
+    ];
 
 
     /**
@@ -51,7 +71,7 @@ class ManifestFields implements \IteratorAggregate {
      */
     public function __construct(iterable $fields = []) {
         foreach ($fields as $field => $value) {
-            $this->assertFieldsName($field);
+            $this->validateFieldName($field);
             $this->{'set' . ucfirst($field)}($value);
         }
     }
@@ -73,34 +93,6 @@ class ManifestFields implements \IteratorAggregate {
 
 
     /**
-     * @param string $field
-     */
-    private function assertFieldsName(string $field): void {
-        static $validFields = [
-            'backgroundColor',
-            'description',
-            'dir',
-            'display',
-            'id',
-            'icons',
-            'lang',
-            'name',
-            'orientation',
-            'preferRelatedApplications',
-            'relatedApplications',
-            'scope',
-            'shortName',
-            'startUrl',
-            'themeColor',
-            'screenshots',
-        ];
-        if (!in_array($field, $validFields, true)) {
-            throw new \InvalidArgumentException(sprintf('Unknown field "%s"', $field));
-        }
-    }
-
-
-    /**
      * Get default values and merge existing fields with and return a new fields object.
      *
      * @param iterable $fields ManifestFields object or fields array
@@ -110,7 +102,7 @@ class ManifestFields implements \IteratorAggregate {
         $merged = clone $this;
 
         foreach ($fields as $field => $value) {
-            $this->assertFieldsName($this->matchToUpper($field));
+            $this->validateFieldName($this->matchToUpper($field));
             $merged->{'set' . ucfirst($this->matchToUpper($field))}($value);
         }
 
@@ -128,7 +120,7 @@ class ManifestFields implements \IteratorAggregate {
         $check = clone $this;
 
         foreach ($fields as $field => $value) {
-            $this->assertFieldsName($this->matchToUpper($field));
+            $this->validateFieldName($this->matchToUpper($field));
             $check->{'set' . ucfirst($this->matchToUpper($field))}($value);
         }
 
@@ -209,8 +201,14 @@ class ManifestFields implements \IteratorAggregate {
      *
      * @param string $dir
      * @return static
+     * @throws \Exception
      */
     public function setDir(string $dir): self {
+
+        if (!in_array($dir, $this->dirValues, true)) {
+            throw new \InvalidArgumentException(sprintf('Dir "%s" is not supported', $dir));
+        }
+
         $this->dir = $dir;
         $this->setFields['dir'] = null;
 
@@ -227,10 +225,18 @@ class ManifestFields implements \IteratorAggregate {
 
 
     /**
-     * @param string $display Defines the developers’ preferred display mode for the website.
+     * Defines the developers’ preferred display mode for the website.
+     *
+     * @param string $display
      * @return static
+     * @throws \Exception
      */
     public function setDisplay(string $display): self {
+
+        if (!in_array($display, $this->displayValues, true)) {
+            throw new \InvalidArgumentException(sprintf('Display mode "%s" i snot supported', $display));
+        }
+
         $this->display = $display;
         $this->setFields['display'] = null;
 
@@ -340,10 +346,18 @@ class ManifestFields implements \IteratorAggregate {
 
 
     /**
-     * @param string $orientation Defines the default orientation for all the website's top level browsing contexts.
+     * Defines the default orientation for all the website's top level browsing contexts.
+     *
+     * @param string $orientation
      * @return static
+     * @throws \Exception
      */
     public function setOrientation(string $orientation): self {
+
+        if (!in_array($orientation, $this->orientationValues, true)) {
+            throw new \InvalidArgumentException(sprintf('Orientation "%s" is not supported', $field));
+        }
+
         $this->orientation = $orientation;
         $this->setFields['orientation'] = null;
 
@@ -381,6 +395,47 @@ class ManifestFields implements \IteratorAggregate {
      */
     public function getPreferRelatedApplications(): bool {
         return $this->preferRelatedApplications;
+    }
+
+
+    /**
+     *
+     * An array for handling specific protocols
+     * https://developer.chrome.com/docs/web-platform/best-practices/url-protocol-handler
+     *
+     * @param string $protocol
+     * @param string $url
+     * @return static
+     */
+    public function setProtocolHandlers(array $protocolHandlers): self {
+
+        if (!is_array($protocolHandlers[array_keys($protocolHandlers)[0]])) {
+            $protocolHandlers = [$protocolHandlers];
+        }
+
+        foreach ($protocolHandlers as $hdl) {
+            $handler = new ManifestProtocolHandler();
+            $handler->setProtocol($hdl['protocol']);
+            $handler->setUrl($hdl['url']);
+
+            $this->protocolHandlers[] = $handler;
+        }
+        $this->setFields['protocolHandlers'] = null;
+
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function getProtocolHandlers(): array {
+        return array_map(function ($handler) {
+            return [
+                'protocol' => $handler->getProtocol(),
+                'url' => $handler->getUrl()
+            ];
+        }, $this->protocolHandlers);
     }
 
 
@@ -521,5 +576,20 @@ class ManifestFields implements \IteratorAggregate {
      */
     public function getThemeColor(): string {
         return $this->themeColor;
+    }
+
+
+    public function getValidFieldNames(): array {
+        return $this->validFieldNames;
+    }
+
+
+    /**
+     * @param string $field
+     */
+    public function validateFieldName(string $field): void {
+        if (!in_array($field, $this->validFieldNames, true)) {
+            throw new \InvalidArgumentException(sprintf('Unknown field "%s"', $field));
+        }
     }
 }
